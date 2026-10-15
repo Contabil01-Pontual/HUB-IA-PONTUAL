@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pontual Hub de IA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Highlight.js for code block styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+    <!-- html2pdf.js para exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config Customization -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilita troca manual de tema
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        pontual: {
+                            dark: '#0a0a0a',      /* Fundo escuro principal */
+                            darker: '#171717',    /* Fundo escuro secundário */
+                            primary: '#f97316',   /* Laranja Pontual (Principal) */
+                            secondary: '#ea580c', /* Laranja Escuro (Hover) */
+                            accent: '#fb923c',    /* Laranja Claro */
+                            light: '#f8fafc',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f97316; /* Hover laranja */
+        }
+
+        /* Markdown Styles Adaptáveis para Light/Dark Mode */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body h1 { font-size: 1.5rem; }
+        .markdown-body h2 { font-size: 1.25rem; }
+        .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-body ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        
+        /* Light mode code */
+        .markdown-body code:not(pre code) {
+            background-color: #f1f5f9;
+            color: #ea580c; /* Laranja no inline code */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+        /* Dark mode code */
+        .dark .markdown-body code:not(pre code) {
+            background-color: #262626;
+            color: #fb923c;
+        }
+        
+        .markdown-body pre {
+            background-color: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        
+        /* Message Animation Improvements */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .msg-enter {
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Loader Improvements */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: currentColor;
+            border-radius: 50%;
+            animation: pulse-bounce 1.2s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes pulse-bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Globals */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Esconder input de arquivo */
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-pontual-light text-slate-800 dark:bg-pontual-dark dark:text-gray-200 h-screen flex overflow-hidden font-sans transition-colors duration-300">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 dark:bg-black text-slate-300 flex flex-col transition-all duration-300 border-r border-transparent dark:border-gray-800 z-50 fixed md:relative h-full transform -translate-x-full md:translate-x-0" id="sidebar">
+        <!-- Logo Area -->
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-pontual-primary text-white w-8 h-8 rounded flex items-center justify-center font-bold text-lg shadow-sm">
+                    P
+                </div>
+                <div>
+                    <h1 class="text-white font-bold tracking-wide text-sm">Pontual</h1>
+                    <p class="text-xs text-slate-400">Hub de IA</p>
+                </div>
+            </div>
+            <button class="md:hidden text-slate-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- New Chat Button -->
+        <div class="p-4">
+            <button onclick="startNewChat()" class="w-full flex items-center gap-2 bg-pontual-primary/10 hover:bg-pontual-primary/20 border border-pontual-primary/30 text-pontual-primary rounded-md py-2 px-4 transition-colors text-sm font-medium">
+                <i class="fas fa-plus"></i> Nova Consulta
+            </button>
+        </div>
+
+        <!-- Chat History List (Visual Placeholder) -->
+        <div class="flex-1 overflow-y-auto px-3 space-y-1">
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-2">Hoje</div>
+            <button class="w-full text-left px-3 py-2 text-sm bg-slate-800 dark:bg-gray-900 rounded text-white truncate hover:bg-slate-700 transition-colors">
+                <i class="far fa-comment-alt mr-2 text-pontual-primary"></i> Análise de Balanço DRE
+            </button>
+            <button class="w-full text-left px-3 py-2 text-sm rounded text-slate-300 truncate hover:bg-slate-800 dark:hover:bg-gray-900 transition-colors">
+                <i class="far fa-comment-alt mr-2 text-slate-500"></i> Dúvida Simples Nacional
+            </button>
+            
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 mt-4">Anteriores</div>
+            <button class="w-full text-left px-3 py-2 text-sm rounded text-slate-300 truncate hover:bg-slate-800 dark:hover:bg-gray-900 transition-colors">
+                <i class="far fa-comment-alt mr-2 text-slate-500"></i> Resumo Legislação Trabalhista
+            </button>
+        </div>
+
+        <!-- User / Settings Area -->
+        <div class="p-4 border-t border-slate-800">
+            <button onclick="openSettings()" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 dark:hover:bg-gray-900 rounded-md transition-colors text-sm">
+                
+                <!-- Avatar Dinâmico da Sidebar -->
+                <img id="sidebar-avatar-img" src="" alt="User" class="w-8 h-8 rounded-full object-cover border border-slate-600 hidden">
+                <div id="sidebar-avatar-fallback" class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                
+                <div class="text-left flex-1">
+                    <p class="text-white font-medium truncate" id="sidebar-user-name">Equipe Contábil</p>
+                    <p class="text-xs text-slate-400">Configurações</p>
+                </div>
+                <i class="fas fa-cog text-slate-400 hover:text-pontual-primary transition-colors"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full w-full bg-white dark:bg-pontual-darker transition-colors duration-300 overflow-hidden relative">
+        
+        <!-- Header -->
+        <header class="h-14 shrink-0 border-b border-slate-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white/80 dark:bg-pontual-darker/80 backdrop-blur-md shadow-sm z-10">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden text-slate-500 hover:text-pontual-primary" onclick="toggleSidebar()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex flex-col">
+                    <span class="text-xs text-slate-500 dark:text-gray-400 font-semibold uppercase font-heading flex items-center gap-1">
+                        <i class="fas fa-brain text-pontual-primary"></i> Inteligência Artificial
+                    </span>
+                    <select id="model-selector" class="text-sm font-medium text-slate-800 dark:text-white bg-transparent border-none focus:ring-0 cursor-pointer outline-none w-48 md:w-64">
+                        <option value="auto" class="dark:bg-gray-800">✨ Automático (Recomendado)</option>
+                        <option value="loading" disabled class="dark:bg-gray-800">Carregando modelos do OpenRouter...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button onclick="openSettings()" class="text-slate-400 hover:text-pontual-primary dark:hover:text-pontual-primary transition-colors" title="Configurações">
+                <i class="fas fa-cog text-lg"></i>
+            </button>
+        </header>
+
+        <!-- Chat Container -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+            <!-- Initial Welcome Message -->
+            <div class="flex flex-col items-center justify-center h-full text-center text-slate-500 dark:text-gray-400" id="empty-state">
+                <div class="bg-pontual-primary/10 w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <i class="fas fa-robot text-5xl text-pontual-primary"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-3 font-heading">Como a IA pode ajudar?</h2>
+                <p class="max-w-md text-sm md:text-base leading-relaxed">Use o Hub da Pontual para redigir e-mails, analisar dados de planilhas, tirar dúvidas sobre legislação ou otimizar tarefas contábeis.</p>
+                <div class="mt-10 flex flex-wrap justify-center gap-3 max-w-2xl">
+                    <button onclick="fillPrompt('Pode me resumir as principais mudanças na reforma tributária brasileira em tópicos simples?')" class="bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-5 py-2.5 rounded-full text-sm transition-all shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md hover:border-pontual-primary/50 dark:hover:border-pontual-primary/50 font-medium">
+                        <i class="fas fa-file-invoice-dollar mr-2 text-pontual-primary"></i> Resumo Reforma Tributária
+                    </button>
+                    <button onclick="fillPrompt('Escreva um e-mail formal para um cliente cobrando o envio dos extratos bancários referentes ao mês passado para fechamento do balanço.')" class="bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-5 py-2.5 rounded-full text-sm transition-all shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md hover:border-pontual-primary/50 dark:hover:border-pontual-primary/50 font-medium">
+                        <i class="fas fa-envelope mr-2 text-pontual-primary"></i> E-mail cobrança de extratos
+                    </button>
+                    <button onclick="fillPrompt('Me explique a diferença entre Lucro Presumido e Lucro Real como se eu fosse um leigo abrindo a primeira empresa.')" class="bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-5 py-2.5 rounded-full text-sm transition-all shadow-sm border border-slate-200 dark:border-gray-700 hover:shadow-md hover:border-pontual-primary/50 dark:hover:border-pontual-primary/50 font-medium">
+                        <i class="fas fa-balance-scale mr-2 text-pontual-primary"></i> Explicar regimes tributários
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="w-full shrink-0 bg-white dark:bg-pontual-darker pt-2 pb-4 px-4 md:px-8 border-t border-slate-200 dark:border-gray-800">
+            <div class="max-w-4xl mx-auto relative flex flex-col border border-slate-300 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 shadow-lg focus-within:ring-2 focus-within:ring-pontual-primary/50 focus-within:border-pontual-primary transition-all overflow-hidden">
+                
+                <!-- File Preview Container -->
+                <div id="file-preview-container" class="hidden px-4 pt-3 pb-1 flex-wrap gap-2"></div>
+                
+                <div class="flex items-end w-full">
+                    <input type="file" id="chat-file-upload" class="hidden" multiple accept="image/*,.txt,.csv,.md,.json" onchange="handleChatFileSelect(event)">
+                    <button onclick="document.getElementById('chat-file-upload').click()" class="p-3 text-slate-400 hover:text-pontual-primary dark:hover:text-pontual-primary transition-colors h-12 flex items-center justify-center shrink-0" title="Anexar arquivo">
+                        <i class="fas fa-paperclip text-lg"></i>
+                    </button>
+                    
+                    <textarea 
+                        id="user-input" 
+                        rows="1" 
+                        class="w-full max-h-48 py-3 px-2 bg-transparent border-none focus:ring-0 resize-none outline-none text-slate-700 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-500" 
+                        placeholder="Envie uma mensagem ou anexe arquivos..."
+                        oninput="autoResize(this)"
+                        onkeydown="handleEnter(event)"></textarea>
+                    
+                    <button 
+                        id="send-btn"
+                        onclick="sendMessage()" 
+                        class="p-2 m-1 h-10 w-10 shrink-0 bg-pontual-primary text-white rounded-xl hover:bg-pontual-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="text-center text-xs text-slate-400 dark:text-gray-500 mt-2">
+                A IA pode cometer erros. Verifique informações importantes relacionadas a cálculos e legislações.
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all msg-enter border border-transparent dark:border-gray-700">
+            <div class="p-4 border-b border-slate-200 dark:border-gray-700 flex justify-between items-center bg-slate-50 dark:bg-gray-800">
+                <h3 class="font-bold text-slate-800 dark:text-white font-heading"><i class="fas fa-sliders-h text-pontual-primary mr-2"></i> Configurações</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-700 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                
+                <!-- Tema -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Aparência</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="theme-selector" value="light" class="text-pontual-primary focus:ring-pontual-primary" onchange="changeTheme('light')">
+                            <span class="text-sm dark:text-gray-300"><i class="fas fa-sun text-yellow-500 mr-1"></i> Claro</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="theme-selector" value="dark" class="text-pontual-primary focus:ring-pontual-primary" onchange="changeTheme('dark')">
+                            <span class="text-sm dark:text-gray-300"><i class="fas fa-moon text-blue-400 mr-1"></i> Escuro</span>
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 dark:border-gray-700">
+
+                <!-- Avatar Personalizado -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Foto de Perfil</label>
+                    <div class="flex items-center gap-4">
+                        <img id="settings-avatar-preview" src="" class="w-12 h-12 rounded-full object-cover border border-slate-300 dark:border-gray-600 hidden">
+                        <div id="settings-avatar-fallback" class="w-12 h-12 rounded-full bg-slate-200 dark:bg-gray-700 flex items-center justify-center text-slate-500 dark:text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <label class="cursor-pointer bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 px-3 py-1.5 rounded-md text-sm hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                            Escolher Imagem
+                            <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/jpg" onchange="handleAvatarUpload(event)">
+                        </label>
+                        <button onclick="removeAvatar()" id="remove-avatar-btn" class="text-red-500 text-sm hover:underline hidden">Remover</button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 dark:border-gray-700">
+
+                <!-- API Key -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-gray-300">Chave da API OpenRouter</label>
+                        <span id="settings-api-status" class="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-500">Não configurada</span>
+                    </div>
+                    <input type="password" id="api-key-input" class="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pontual-primary focus:border-transparent text-sm" placeholder="sk-or-v1-...">
+                    <p class="text-xs text-slate-500 dark:text-gray-400 mt-2">Salva apenas no seu navegador localmente.</p>
+                </div>
+                
+            </div>
+            
+            <div class="p-4 border-t border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 flex justify-end gap-2">
+                <button onclick="closeSettings()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="saveSettings()" class="px-4 py-2 text-sm font-medium text-white bg-pontual-primary hover:bg-pontual-secondary rounded-lg transition-colors shadow-md hover:shadow-lg">Salvar Configurações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal Customizado -->
+    <div id="alert-modal" class="fixed inset-0 z-[60] hidden flex items-start justify-center pt-20 pointer-events-none">
+        <div id="alert-content" class="bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl transform -translate-y-full opacity-0 transition-all duration-300 pointer-events-auto flex items-center gap-3">
+            <i id="alert-icon" class="fas fa-exclamation-circle text-yellow-400"></i>
+            <span id="alert-text" class="text-sm font-medium">Mensagem de alerta aqui</span>
+        </div>
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        const DEFAULT_MODEL = 'openai/gpt-4o-mini';
+        let openRouterApiKey = localStorage.getItem('pontual_or_apikey') || '';
+        let userAvatar = localStorage.getItem('pontual_avatar') || null;
+        let currentTheme = localStorage.getItem('pontual_theme') || 'light';
+        let chatHistory = []; 
+        let isWaitingForResponse = false;
+        let availableModels = [];
+        let attachedFiles = []; // Armazena arquivos anexados no chat
+
+        const DOM = {
+            chatContainer: document.getElementById('chat-messages'),
+            userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
+            modelSelector: document.getElementById('model-selector'),
+            emptyState: document.getElementById('empty-state'),
+            sidebar: document.getElementById('sidebar'),
+            sidebarOverlay: document.getElementById('sidebar-overlay'),
+            settingsModal: document.getElementById('settings-modal'),
+            apiKeyInput: document.getElementById('api-key-input'),
+            settingsApiStatus: document.getElementById('settings-api-status'),
+            // Avatares
+            sidebarAvatarImg: document.getElementById('sidebar-avatar-img'),
+            sidebarAvatarFallback: document.getElementById('sidebar-avatar-fallback'),
+            settingsAvatarPreview: document.getElementById('settings-avatar-preview'),
+            settingsAvatarFallback: document.getElementById('settings-avatar-fallback'),
+            removeAvatarBtn: document.getElementById('remove-avatar-btn'),
+            // Upload
+            chatFileUpload: document.getElementById('chat-file-upload'),
+            filePreviewContainer: document.getElementById('file-preview-container')
+        };
+
+        // --- Inicialização ---
+        function init() {
+            applyTheme(currentTheme);
+            updateApiStatus();
+            updateAvatarUI();
+            
+            // Configure Marked.js options
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                    return hljs.highlight(code, { language }).value;
+                },
+                langPrefix: 'hljs language-'
+            });
+            
+            // Fetch OpenRouter Models
+            fetchOpenRouterModels();
+        }
+
+        // --- Funções de UI ---
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight < 192 ? textarea.scrollHeight : 192) + 'px';
+        }
+
+        function toggleSidebar() {
+            DOM.sidebar.classList.toggle('-translate-x-full');
+            DOM.sidebarOverlay.classList.toggle('hidden');
+        }
+
+        function fillPrompt(text) {
+            DOM.userInput.value = text;
+            autoResize(DOM.userInput);
+            DOM.userInput.focus();
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // --- Gerenciamento de Anexos no Chat ---
+        async function handleChatFileSelect(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // Limite de 5MB por arquivo
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert(`O arquivo ${file.name} é muito grande (Máx 5MB).`);
+                    continue;
+                }
+
+                try {
+                    const fileData = await readChatFile(file);
+                    attachedFiles.push({
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: fileData.data,
+                        isImage: fileData.isImage
+                    });
+                } catch (error) {
+                    showAlert(`Erro ao ler arquivo ${file.name}`);
+                }
+            }
+            
+            event.target.value = ''; // Reseta input
+            renderFilePreviews();
+        }
+
+        function readChatFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                const isImage = file.type.startsWith('image/');
+                
+                reader.onload = (e) => {
+                    resolve({
+                        data: e.target.result,
+                        isImage: isImage
+                    });
+                };
+                
+                reader.onerror = (e) => reject(e);
+                
+                if (isImage) {
+                    reader.readAsDataURL(file); // Imagem (Base64)
+                } else {
+                    reader.readAsText(file); // Textos (.csv, .txt)
+                }
+            });
+        }
+
+        function removeAttachedFile(index) {
+            attachedFiles.splice(index, 1);
+            renderFilePreviews();
+        }
+
+        function renderFilePreviews() {
+            if (attachedFiles.length === 0) {
+                DOM.filePreviewContainer.classList.add('hidden');
+                DOM.filePreviewContainer.innerHTML = '';
+                return;
+            }
+
+            DOM.filePreviewContainer.classList.remove('hidden');
+            DOM.filePreviewContainer.innerHTML = attachedFiles.map((file, index) => `
+                <div class="flex items-center gap-2 bg-slate-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg text-sm border border-slate-200 dark:border-gray-600">
+                    ${file.isImage 
+                        ? `<img src="${file.data}" class="w-6 h-6 object-cover rounded">` 
+                        : `<i class="fas fa-file-alt text-pontual-primary"></i>`}
+                    <span class="truncate max-w-[150px] text-slate-700 dark:text-gray-200" title="${file.name}">${file.name}</span>
+                    <button onclick="removeAttachedFile(${index})" class="text-slate-400 hover:text-red-500 ml-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function showAlert(message, type = 'error') {
+            const modal = document.getElementById('alert-modal');
+            const content = document.getElementById('alert-content');
+            const text = document.getElementById('alert-text');
+            const icon = document.getElementById('alert-icon');
+
+            text.innerText = message;
+            
+            if(type === 'error') {
+                icon.className = 'fas fa-exclamation-circle text-red-400';
+            } else if (type === 'success') {
+                icon.className = 'fas fa-check-circle text-green-400';
+            } else {
+                icon.className = 'fas fa-info-circle text-blue-400';
+            }
+
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void content.offsetWidth;
+            content.classList.remove('-translate-y-full', 'opacity-0');
+            content.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                content.classList.remove('translate-y-0', 'opacity-100');
+                content.classList.add('-translate-y-full', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }, 4000);
+        }
+
+        // --- Gerenciamento de Tema (Claro/Escuro) ---
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            // Atualiza os radio buttons nas configs
+            const radios = document.getElementsByName('theme-selector');
+            for(let i = 0; i < radios.length; i++){
+                if(radios[i].value === theme) radios[i].checked = true;
+            }
+        }
+
+        function changeTheme(theme) {
+            currentTheme = theme;
+            applyTheme(theme);
+        }
+
+        // --- Gerenciamento de Avatar ---
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validar tamanho (max 2MB para base64)
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('A imagem deve ter no máximo 2MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                userAvatar = e.target.result;
+                updateAvatarUI();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeAvatar() {
+            userAvatar = null;
+            updateAvatarUI();
+            document.getElementById('avatar-upload').value = '';
+        }
+
+        function updateAvatarUI() {
+            if (userAvatar) {
+                DOM.sidebarAvatarImg.src = userAvatar;
+                DOM.sidebarAvatarImg.classList.remove('hidden');
+                DOM.sidebarAvatarFallback.classList.add('hidden');
+                
+                DOM.settingsAvatarPreview.src = userAvatar;
+                DOM.settingsAvatarPreview.classList.remove('hidden');
+                DOM.settingsAvatarFallback.classList.add('hidden');
+                
+                DOM.removeAvatarBtn.classList.remove('hidden');
+            } else {
+                DOM.sidebarAvatarImg.classList.add('hidden');
+                DOM.sidebarAvatarImg.src = '';
+                DOM.sidebarAvatarFallback.classList.remove('hidden');
+                
+                DOM.settingsAvatarPreview.classList.add('hidden');
+                DOM.settingsAvatarPreview.src = '';
+                DOM.settingsAvatarFallback.classList.remove('hidden');
+                
+                DOM.removeAvatarBtn.classList.add('hidden');
+            }
+        }
+
+        // --- Busca de Modelos OpenRouter ---
+        async function fetchOpenRouterModels() {
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/models');
+                const data = await response.json();
+                
+                if (data && data.data) {
+                    availableModels = data.data
+                        .filter(model => !model.id.includes('free')) // Filtra modelos gratuitos que as vezes são instáveis
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    populateModelSelector();
+                }
+            } catch (error) {
+                console.error("Erro ao carregar modelos:", error);
+                DOM.modelSelector.innerHTML = '<option value="auto">Automático (Padrão)</option><option value="openai/gpt-4o-mini">GPT-4o Mini</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>';
+            }
+        }
+
+        function populateModelSelector() {
+            let html = '<option value="auto" class="dark:bg-gray-800 font-bold text-pontual-primary">✨ Automático (Recomendado)</option>';
+            
+            // Destacar modelos populares no topo
+            const featuredIds = ['openai/gpt-4o-mini', 'openai/gpt-4o', 'anthropic/claude-3.5-sonnet', 'meta-llama/llama-3.1-70b-instruct'];
+            
+            html += '<optgroup label="Recomendados" class="dark:bg-gray-800">';
+            featuredIds.forEach(id => {
+                const model = availableModels.find(m => m.id === id);
+                if (model) html += `<option value="${model.id}" class="dark:bg-gray-800">${model.name}</option>`;
+            });
+            html += '</optgroup>';
+
+            html += '<optgroup label="Todos os Modelos" class="dark:bg-gray-800">';
+            availableModels.forEach(model => {
+                if (!featuredIds.includes(model.id)) {
+                    html += `<option value="${model.id}" class="dark:bg-gray-800">${model.name}</option>`;
+                }
+            });
+            html += '</optgroup>';
+
+            DOM.modelSelector.innerHTML = html;
+        }
+
+        // --- Configurações de API e Modal ---
+        function openSettings() {
+            DOM.apiKeyInput.value = openRouterApiKey;
+            DOM.settingsModal.classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            DOM.settingsModal.classList.add('hidden');
+            // Reverte tema se cancelou sem salvar
+            applyTheme(localStorage.getItem('pontual_theme') || 'light');
+            // Reverte avatar se cancelou sem salvar
+            userAvatar = localStorage.getItem('pontual_avatar');
+            updateAvatarUI();
+        }
+
+        function saveSettings() {
+            // Salva Key
+            const newKey = DOM.apiKeyInput.value.trim();
+            openRouterApiKey = newKey;
+            localStorage.setItem('pontual_or_apikey', newKey);
+            updateApiStatus();
+            
+            // Salva Tema
+            localStorage.setItem('pontual_theme', currentTheme);
+            
+            // Salva Avatar
+            if (userAvatar) {
+                localStorage.setItem('pontual_avatar', userAvatar);
+            } else {
+                localStorage.removeItem('pontual_avatar');
+            }
+
+            closeSettings();
+            showAlert('Configurações salvas com sucesso!', 'success');
+        }
+
+        function updateApiStatus() {
+            if (openRouterApiKey) {
+                DOM.settingsApiStatus.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Configurada';
+                DOM.settingsApiStatus.className = 'text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+            } else {
+                DOM.settingsApiStatus.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Não configurada';
+                DOM.settingsApiStatus.className = 'text-xs font-semibold px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+            }
+        }
+
+        // --- Lógica de Chat e OpenRouter ---
+        function startNewChat() {
+            chatHistory = [];
+            DOM.chatContainer.innerHTML = '';
+            DOM.chatContainer.appendChild(DOM.emptyState);
+            DOM.emptyState.style.display = 'flex';
+            if (window.innerWidth < 768) toggleSidebar(); 
+        }
+
+        function createMessageElement(role, content) {
+            const div = document.createElement('div');
+            div.className = `flex gap-4 max-w-4xl mx-auto w-full msg-enter ${role === 'user' ? 'flex-row-reverse' : ''}`;
+            
+            const avatar = document.createElement('div');
+            if (role === 'user') {
+                if (userAvatar) {
+                    avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 object-cover overflow-hidden';
+                    avatar.innerHTML = `<img src="${userAvatar}" class="w-full h-full object-cover">`;
+                } else {
+                    avatar.className = 'w-8 h-8 rounded-full bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-gray-300 flex items-center justify-center flex-shrink-0 mt-1';
+                    avatar.innerHTML = '<i class="fas fa-user text-sm"></i>';
+                }
+            } else {
+                avatar.className = 'w-8 h-8 rounded-full bg-pontual-primary text-white flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-bold';
+                avatar.innerHTML = 'P';
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `flex flex-col flex-1 ${role === 'user' ? 'items-end' : 'items-start'} max-w-full overflow-hidden`;
+
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = `w-full flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+
+            const contentDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            contentDiv.id = messageId;
+            
+            if (role === 'user') {
+                contentDiv.className = 'px-5 py-3.5 rounded-2xl max-w-[90%] md:max-w-[80%] text-sm md:text-base shadow-sm bg-pontual-primary text-white rounded-tr-sm break-words';
+                contentDiv.textContent = content;
+                contentWrapper.appendChild(contentDiv);
+            } else {
+                contentDiv.className = 'px-5 py-3.5 rounded-2xl w-full text-sm md:text-base shadow-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-800 dark:text-gray-100 rounded-tl-sm markdown-body break-words overflow-x-auto';
+                contentDiv.innerHTML = marked.parse(content); 
+                contentWrapper.appendChild(contentDiv);
+
+                // --- Botões de Ação (Copiar, PDF, Excel) ---
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex flex-wrap gap-2 mt-2 ml-1';
+                
+                // Botão Copiar
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'text-xs font-medium text-slate-500 hover:text-pontual-primary transition-colors flex items-center gap-1.5 bg-transparent hover:bg-slate-100 dark:hover:bg-gray-700 px-2 py-1.5 rounded-md';
+                copyBtn.innerHTML = '<i class="far fa-copy"></i> Copiar';
+                copyBtn.onclick = () => copyText(copyBtn, content);
+                
+                // Botão PDF
+                const pdfBtn = document.createElement('button');
+                pdfBtn.className = 'text-xs font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1.5 bg-transparent hover:bg-slate-100 dark:hover:bg-gray-700 px-2 py-1.5 rounded-md';
+                pdfBtn.innerHTML = '<i class="far fa-file-pdf"></i> Salvar PDF';
+                pdfBtn.onclick = () => exportToPDF(messageId);
+
+                // Botão CSV/Excel
+                const csvBtn = document.createElement('button');
+                csvBtn.className = 'text-xs font-medium text-slate-500 hover:text-green-600 transition-colors flex items-center gap-1.5 bg-transparent hover:bg-slate-100 dark:hover:bg-gray-700 px-2 py-1.5 rounded-md';
+                csvBtn.innerHTML = '<i class="fas fa-file-excel"></i> Exportar Dados (CSV)';
+                csvBtn.title = 'Salva o texto gerado para ser aberto no Excel';
+                csvBtn.onclick = () => exportToCSV(content);
+
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(pdfBtn);
+                actionsDiv.appendChild(csvBtn);
+                
+                contentWrapper.appendChild(actionsDiv);
+            }
+
+            messageBox.appendChild(contentWrapper);
+            div.appendChild(avatar);
+            div.appendChild(messageBox);
+
+            return div;
+        }
+
+        // --- Funções Auxiliares de Exportação ---
+        function copyText(btn, text) {
+            // Tenta usar API moderna de clipboard
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopiedFeedback(btn);
+                });
+            } else {
+                // Fallback para navegadores antigos ou ambientes sem HTTPS
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopiedFeedback(btn);
+                } catch (err) {
+                    console.error('Falha ao copiar texto: ', err);
+                }
+                textArea.remove();
+            }
+        }
+
+        function showCopiedFeedback(btn) {
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i> Copiado!';
+            setTimeout(() => { btn.innerHTML = originalHtml; }, 2000);
+        }
+
+        function exportToPDF(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const opt = {
+                margin:       15,
+                filename:     `Pontual_IA_Documento_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Cria um container temporário para formatar o PDF de forma bonita e profissional
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.padding = '20px';
+            pdfContainer.style.backgroundColor = '#ffffff'; // Força fundo branco
+            pdfContainer.style.color = '#1e293b'; // Força texto escuro para leitura no PDF
+            pdfContainer.style.fontFamily = 'Inter, sans-serif';
+
+            // Cabeçalho da Pontual
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #f97316; font-family: 'Poppins', sans-serif; font-size: 24px; margin-bottom: 5px; font-weight: bold;">Pontual Contabilidade</h2>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 0;">Hub de Inteligência Artificial - Documento Gerado Automaticamente</p>
+                    <hr style="border: 0; border-top: 2px solid #f97316; margin-top: 15px; margin-bottom: 25px;">
+                </div>
+            `;
+            
+            // Clona o conteúdo da mensagem (sem copiar os botões)
+            const contentClone = element.cloneNode(true);
+            
+            // Remove as classes de dark mode do clone para garantir que saia visível no PDF (fundo branco, letra escura)
+            contentClone.classList.remove('dark:bg-gray-800', 'dark:text-gray-100', 'border', 'shadow-sm', 'bg-white');
+            
+            pdfContainer.appendChild(header);
+            pdfContainer.appendChild(contentClone);
+            
+            // Processa o PDF
+            html2pdf().set(opt).from(pdfContainer).save();
+        }
+
+        function exportToCSV(text) {
+            // Salva como .csv UTF-8 com BOM para o Excel brasileiro reconhecer a acentuação corretamente
+            const bom = "\uFEFF"; 
+            const blob = new Blob([bom + text], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Pontual_IA_Dados_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function createLoaderElement() {
+            const div = document.createElement('div');
+            div.id = 'ai-loader';
+            div.className = 'flex gap-4 max-w-4xl mx-auto w-full msg-enter';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-pontual-primary text-white flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-bold">P</div>
+                <div class="px-4 py-4 rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 shadow-sm flex items-center h-[52px]">
+                    <div class="typing-indicator text-pontual-primary">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function appendMessage(role, content) {
+            if (chatHistory.length === 0) {
+                DOM.emptyState.style.display = 'none';
+            }
+            
+            const msgEl = createMessageElement(role, content);
+            DOM.chatContainer.appendChild(msgEl);
+            DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
+        }
+
+        function setInputState(disabled) {
+            isWaitingForResponse = disabled;
+            DOM.userInput.disabled = disabled;
+            DOM.sendBtn.disabled = disabled;
+            if (disabled) {
+                DOM.sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            } else {
+                DOM.sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                DOM.userInput.focus();
+            }
+        }
+
+        async function sendMessage() {
+            if (isWaitingForResponse) return;
+            
+            const text = DOM.userInput.value.trim();
+            if (!text && attachedFiles.length === 0) return;
+
+            if (!openRouterApiKey) {
+                showAlert('Por favor, configure sua chave de API do OpenRouter nas configurações.');
+                openSettings();
+                return;
+            }
+
+            // Preparar conteúdo (texto + arquivos anexados)
+            let userContentForAPI = text;
+            let uiDisplayMessage = text;
+            
+            if (attachedFiles.length > 0) {
+                let hasImage = attachedFiles.some(f => f.isImage);
+                let textFilesContent = '';
+                
+                // Extrai texto de arquivos de texto (.csv, .txt)
+                attachedFiles.filter(f => !f.isImage).forEach(f => {
+                    textFilesContent += `\n\n--- Início do Arquivo: ${f.name} ---\n${f.data}\n--- Fim do Arquivo ---`;
+                });
+
+                if (hasImage) {
+                    // Estrutura de visão (OpenAI spec multimodalities)
+                    userContentForAPI = [];
+                    if (text || textFilesContent) {
+                        userContentForAPI.push({ type: "text", text: text + textFilesContent });
+                    }
+                    attachedFiles.filter(f => f.isImage).forEach(f => {
+                        userContentForAPI.push({
+                            type: "image_url",
+                            image_url: { url: f.data }
+                        });
+                    });
+                } else {
+                    // Apenas texto
+                    userContentForAPI = text + textFilesContent;
+                }
+
+                // Representação visual na UI
+                const fileNames = attachedFiles.map(f => f.name).join(', ');
+                uiDisplayMessage = text ? `${text}\n\n📎 *Anexos: ${fileNames}*` : `📎 *Anexos: ${fileNames}*`;
+            }
+
+            // Limpa UI
+            DOM.userInput.value = '';
+            DOM.userInput.style.height = 'auto';
+            attachedFiles = [];
+            renderFilePreviews();
+
+            // Adiciona mensagens
+            appendMessage('user', uiDisplayMessage);
+            chatHistory.push({ role: 'user', content: userContentForAPI });
+            
+            // Prepare UI for loading
+            setInputState(true);
+            const loader = createLoaderElement();
+            DOM.chatContainer.appendChild(loader);
+            DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
+
+            let selectedModel = DOM.modelSelector.value;
+            if (selectedModel === 'auto' || selectedModel === 'loading') {
+                selectedModel = DEFAULT_MODEL; // Fallback inteligente
+            }
+
+            // System Prompt Context
+            const systemPrompt = {
+                role: "system",
+                content: "Você é o assistente virtual de inteligência artificial da 'Pontual Contabilidade'. Você deve ser profissional, prestativo, claro e objetivo. Você está conversando com funcionários do escritório contábil. Suas respostas devem considerar as leis brasileiras, normas contábeis (CPC, IFRS) e práticas tributárias atuais do Brasil quando o assunto for técnico. Formate suas respostas de forma limpa usando Markdown."
+            };
+
+            const messagesToSend = [systemPrompt, ...chatHistory];
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${openRouterApiKey}`,
+                        'HTTP-Referer': window.location.href, 
+                        'X-Title': 'Pontual Contabilidade Hub', 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: messagesToSend,
+                        temperature: 0.7, 
+                    })
+                });
+
+                loader.remove(); 
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `Erro HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.choices && data.choices.length > 0) {
+                    const aiResponse = data.choices[0].message.content;
+                    appendMessage('assistant', aiResponse);
+                    chatHistory.push({ role: 'assistant', content: aiResponse });
+                } else {
+                    throw new Error("Resposta da API vazia ou em formato inesperado.");
+                }
+
+            } catch (error) {
+                console.error("Erro na chamada da API:", error);
+                loader.remove();
+                
+                const errorMessage = `**Erro ao conectar com a IA.**\n\nDetalhes técnicos: \`${error.message}\`\n\nPor favor, verifique se sua chave da API está correta e se possui saldo no OpenRouter.`;
+                appendMessage('assistant', errorMessage);
+                showAlert('Falha na comunicação com o provedor de IA.', 'error');
+            } finally {
+                setInputState(false);
+            }
+        }
+
+        // Run init on load
+        window.onload = init;
+    </script>
+</body>
+</html>
